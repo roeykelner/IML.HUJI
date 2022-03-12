@@ -1,13 +1,17 @@
 from __future__ import annotations
+
+import numpy
 import numpy as np
 from numpy.linalg import inv, det, slogdet
+from scipy.stats import norm
 
 
 class UnivariateGaussian:
     """
     Class for univariate Gaussian Distribution Estimator
     """
-    def __init__(self, biased_var: bool = False) -> UnivariateGaussian:
+
+    def __init__(self, biased_var: bool = False):  # -> UnivariateGaussian
         """
         Estimator for univariate Gaussian mean and variance parameters
 
@@ -51,7 +55,13 @@ class UnivariateGaussian:
         Sets `self.mu_`, `self.var_` attributes according to calculated estimation (where
         estimator is either biased or unbiased). Then sets `self.fitted_` attribute to `True`
         """
-        raise NotImplementedError()
+        self.mu_ = np.mean(X)
+        s = 0
+        for x_i in X:
+            s += (x_i - self.mu_) ** 2
+
+        # Dividing by n-1 or n according to bias of estimator
+        self.var_ = s / (len(X) - 1) if not self.biased_ else s / (len(X))
 
         self.fitted_ = True
         return self
@@ -76,7 +86,8 @@ class UnivariateGaussian:
         """
         if not self.fitted_:
             raise ValueError("Estimator must first be fitted before calling `pdf` function")
-        raise NotImplementedError()
+
+        return norm.pdf(X, loc=self.mu_, scale=np.sqrt(self.var_))
 
     @staticmethod
     def log_likelihood(mu: float, sigma: float, X: np.ndarray) -> float:
@@ -97,13 +108,15 @@ class UnivariateGaussian:
         log_likelihood: float
             log-likelihood calculated
         """
-        raise NotImplementedError()
+        #Likelihood of X under (mu, sigma) is defined as the the density function (mu, sigma) of X
+        return numpy.log(norm.pdf(X, loc=mu, scale=np.sqrt(sigma)))
 
 
 class MultivariateGaussian:
     """
     Class for multivariate Gaussian Distribution Estimator
     """
+
     def __init__(self):
         """
         Initialize an instance of multivariate Gaussian estimator
