@@ -3,7 +3,6 @@ from __future__ import annotations
 import numpy
 import numpy as np
 from numpy.linalg import inv, det, slogdet
-from scipy.stats import norm
 
 
 class UnivariateGaussian:
@@ -36,6 +35,10 @@ class UnivariateGaussian:
         """
         self.biased_ = biased_var
         self.fitted_, self.mu_, self.var_ = False, None, None
+
+    @staticmethod
+    def gaussian_density(val, mu, var):
+        return np.exp((-1) * ((val - mu) ** 2) / 2 * var) / np.sqrt((2 * np.pi * var))
 
     def fit(self, X: np.ndarray) -> UnivariateGaussian:
         """
@@ -86,8 +89,9 @@ class UnivariateGaussian:
         """
         if not self.fitted_:
             raise ValueError("Estimator must first be fitted before calling `pdf` function")
-
-        return norm.pdf(X, loc=self.mu_, scale=np.sqrt(self.var_))
+        # Gaussian density function
+        # return np.exp((-1) * ((X - self.mu_) ** 2) / 2 * self.var_) / np.sqrt((2 * np.pi * self.var_))
+        return self.gaussian_density(X, self.mu_, self.var_)
 
     @staticmethod
     def log_likelihood(mu: float, sigma: float, X: np.ndarray) -> float:
@@ -108,8 +112,8 @@ class UnivariateGaussian:
         log_likelihood: float
             log-likelihood calculated
         """
-        #Likelihood of X under (mu, sigma) is defined as the the density function (mu, sigma) of X
-        return numpy.log(norm.pdf(X, loc=mu, scale=np.sqrt(sigma)))
+        # Likelihood of X under (mu, sigma) is defined as the density function (mu, sigma) of X
+        return numpy.log(np.prod(UnivariateGaussian.gaussian_density(X, mu, sigma)))
 
 
 class MultivariateGaussian:
@@ -156,10 +160,25 @@ class MultivariateGaussian:
         Sets `self.mu_`, `self.cov_` attributes according to calculated estimation.
         Then sets `self.fitted_` attribute to `True`
         """
-        raise NotImplementedError()
+        self.mu_ = np.mean(X, axis=0)  # mu_[j] = mean of the j'th column of X
+        X_centered = X - np.tile(self.mu_, (X.shape[0], 1))  # removing the mean from every column
+        self.cov_ = np.dot(X_centered.transpose(), X_centered) / (X.shape[0] - 1)  # formula for the covariance matrix
 
         self.fitted_ = True
         return self
+
+    @staticmethod
+    def mult_gaussian_density(X: np.ndarray, mu: np.ndarray, sigma: np.ndarray) -> float:
+        """
+        @param X: 1d Vector of dimension D
+        @param mu: Gaussian expectation
+        @param sigma: Gaussian variance
+        @return: Density value of a single Gaussian Multivariate vector X
+        """
+        X_centered = X - mu
+        expo = np.exp((-0.5) * X_centered @ np.linalg.inv(sigma) @ X_centered.transpose())
+        d = X.shape[0]
+        return expo / np.sqrt((2 * np.pi) ** d * np.linalg.det(sigma))
 
     def pdf(self, X: np.ndarray):
         """
@@ -181,7 +200,10 @@ class MultivariateGaussian:
         """
         if not self.fitted_:
             raise ValueError("Estimator must first be fitted before calling `pdf` function")
-        raise NotImplementedError()
+        res = np.zeros(X.shape[0])
+        for i in range(X.shape[0]):
+            res[i] = self.mult_gaussian_density(X[i, :], self.mu, self.cov_)
+        return res
 
     @staticmethod
     def log_likelihood(mu: np.ndarray, cov: np.ndarray, X: np.ndarray) -> float:
@@ -202,4 +224,21 @@ class MultivariateGaussian:
         log_likelihood: float
             log-likelihood calculated over all input data and under given parameters of Gaussian
         """
-        raise NotImplementedError()
+
+        # likeli_vec = np.zeros(X.shape[0])
+        # for i in range(X.shape[0]):
+        #     likeli_vec[i] = MultivariateGaussian.mult_gaussian_density(X[i, :], mu, cov)
+        # prod = np.prod(likeli_vec)
+        # if prod == 0:
+        #     return 0
+        # else:
+        #     return np.log(prod)
+
+        #       #I will use the formula I calculated in q9:
+        d = X.shape[1]  # number of features
+        m = X.shape[0]  # number of samples
+        sum = 0
+        for x_i in X:
+            sum += (x_i - mu).transpose() @ np.linalg.inv(cov) @ (x_i - mu)
+        l = -0.5 * m * np.log(np.power(2 * np.pi, d) * np.linalg.det(cov))
+        return l - 0.5 * sum
