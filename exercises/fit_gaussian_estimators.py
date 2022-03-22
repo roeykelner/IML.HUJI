@@ -6,10 +6,11 @@ import plotly.express as px
 
 pio.templates.default = "simple_white"
 
-# TODO bring back the . show
-
 # for some reason that's the only way i get it to display
 pio.renderers.default = "browser"
+
+# limit nparray display to 3 decimal places
+np.set_printoptions(precision=3)
 
 
 def test_univariate_gaussian():
@@ -44,8 +45,6 @@ def test_univariate_gaussian():
     fig2.show()
 
 
-
-
 def test_multivariate_gaussian():
     # Question 4 - Draw samples and print fitted model
 
@@ -66,21 +65,26 @@ def test_multivariate_gaussian():
     likeli_matrix = np.zeros((200, 200))
 
     num_of_samples = 1000
+    # Print the progression percentage of creating the heatmap
+    print_prog = False
 
     for i in range(200):
         for j in range(200):
             likeli_matrix[i, j] = MultivariateGaussian.log_likelihood(np.array([f1[i], 0, f3[j], 0]), np.array(cov),
                                                                       rand_data[:num_of_samples, :])
-        if i % 10 == 0:
+
+        if print_prog and (i % 10) == 0:
             print(f"{i / 2}% . . .")
     fig4 = px.imshow(likeli_matrix, labels=dict(x="f1", y="f3", color="Log-Likelihood"),
                      x=f1,
                      y=f3,
                      color_continuous_scale=px.colors.sequential.YlOrRd,
-                     origin="lower")
+                     origin="lower",
+                     title="Log likelihood as a function of expectation estimator parameters",)
+    fig4.update_layout(title_x=0.5)
     fig4.show()
 
-    # # Question 6 - Maximum likelihood
+    # Question 6 - Maximum likelihood
     amax_tuple = np.unravel_index(np.argmax(likeli_matrix), likeli_matrix.shape)
     print(f"\nchecked over {num_of_samples} samples\n"
           f"\nmaximum log-likelihood: {np.amax(likeli_matrix):.3f}\n"
