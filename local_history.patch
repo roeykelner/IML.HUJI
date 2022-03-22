@@ -1,0 +1,19 @@
+Index: IMLearn/learners/gaussian_estimators.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/IMLearn/learners/gaussian_estimators.py b/IMLearn/learners/gaussian_estimators.py
+--- a/IMLearn/learners/gaussian_estimators.py	
++++ b/IMLearn/learners/gaussian_estimators.py	(date 1647115160602)
+@@ -161,7 +161,9 @@
+         Sets `self.mu_`, `self.cov_` attributes according to calculated estimation.
+         Then sets `self.fitted_` attribute to `True`
+         """
+-        
++        self.mu_ = np.mean(X, axis=0)  #mu_[j] = mean of the j'th column of X
++        X_centered = X - np.tile(self.mu_, (X.shape[0], 1)) #removing the mean from every column
++        self.cov_ = X_centered.transpose()*X_centered/(X.shape[0]-1) # formula for the covariance matrix
+ 
+         self.fitted_ = True
+         return self

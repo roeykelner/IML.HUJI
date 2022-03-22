@@ -1,0 +1,17 @@
+Index: exercises/fit_gaussian_estimators.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/exercises/fit_gaussian_estimators.py b/exercises/fit_gaussian_estimators.py
+--- a/exercises/fit_gaussian_estimators.py	
++++ b/exercises/fit_gaussian_estimators.py	(date 1647116451050)
+@@ -60,7 +60,7 @@
+     # raise NotImplementedError()
+ 
+     if __name__ == '__main__':
+-        print(bro)
++        print("bro")
+         np.random.seed(0)
+         # test_univariate_gaussian()
+         # test_multivariate_gaussian()
