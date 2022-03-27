@@ -7,7 +7,7 @@ import plotly.express as px
 pio.templates.default = "simple_white"
 
 # for some reason that's the only way i get it to display
-pio.renderers.default = "browser"
+# pio.renderers.default = "svg"
 
 # limit nparray display to 3 decimal places
 np.set_printoptions(precision=3)
@@ -64,7 +64,7 @@ def test_multivariate_gaussian():
     f3 = np.linspace(-10, 10, 200)
     likeli_matrix = np.zeros((200, 200))
 
-    num_of_samples = 1000
+    num_of_samples = 4
     # Print the progression percentage of creating the heatmap
     print_prog = False
 
@@ -80,7 +80,7 @@ def test_multivariate_gaussian():
                      y=f3,
                      color_continuous_scale=px.colors.sequential.YlOrRd,
                      origin="lower",
-                     title="Log likelihood as a function of expectation estimator parameters",)
+                     title="Log likelihood as a function of expectation estimator parameters", )
     fig4.update_layout(title_x=0.5)
     fig4.show()
 
