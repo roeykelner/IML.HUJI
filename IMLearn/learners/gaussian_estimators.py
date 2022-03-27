@@ -113,8 +113,8 @@ class UnivariateGaussian:
             log-likelihood calculated
         """
         # Likelihood of X under (mu, sigma) is defined as the density function (mu, sigma) of X
-        exp = np.sum((X - mu)**2)/(-2*sigma)
-        return exp-(len(X)/2)*np.log(2*np.pi*sigma)
+        exp = np.sum((X - mu) ** 2) / (-2 * sigma)
+        return exp - (len(X) / 2) * np.log(2 * np.pi * sigma)
 
 
 class MultivariateGaussian:
@@ -161,8 +161,8 @@ class MultivariateGaussian:
         Sets `self.mu_`, `self.cov_` attributes according to calculated estimation.
         Then sets `self.fitted_` attribute to `True`
         """
-        self.mu_ = np.mean(X, axis=0)  #mu_[j] = mean of the j'th column of X
-        X_centered = X - np.tile (self.mu_, (X.shape[0], 1))  # removing the mean from every column
+        self.mu_ = np.mean(X, axis=0)  # mu_[j] = mean of the j'th column of X
+        X_centered = X - np.tile(self.mu_, (X.shape[0], 1))  # removing the mean from every column
         self.cov_ = np.dot(X_centered.transpose(), X_centered) / (X.shape[0] - 1)  # formula for the covariance matrix
 
         self.fitted_ = True
@@ -207,7 +207,6 @@ class MultivariateGaussian:
 
         return res
 
-
     @staticmethod
     def log_likelihood(mu: np.ndarray, cov: np.ndarray, X: np.ndarray) -> float:
         """
@@ -228,8 +227,7 @@ class MultivariateGaussian:
             log-likelihood calculated over all input data and under given parameters of Gaussian
         """
 
-
-        #I will use the formula I calculated in q9:
+        # Using the formula I calculated in q9:
         d = X.shape[1]  # number of features
         m = X.shape[0]  # number of samples
         sum = 0
