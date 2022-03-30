@@ -4,7 +4,6 @@ from IMLearn.utils import split_train_test
 import numpy as np
 import pandas as pd
 
-
 def load_data(filename: str):
     """
     Load Agoda booking cancellation dataset
@@ -22,11 +21,11 @@ def load_data(filename: str):
     """
     # TODO - replace below code with any desired preprocessing
     full_data = pd.read_csv(filename).dropna().drop_duplicates()
-    features = full_data[["h_booking_id",
-                          "hotel_id",
-                          "accommadation_type_name",
-                          "hotel_star_rating",
-                          "customer_nationality"]]
+    features = full_data[["booking_datetime",  # TODO Test data is on different dates
+                          "hotel_area_code",
+                          "no_of_children",
+                          "original_selling_amount"
+                          ]]
     labels = full_data["cancellation_datetime"]
 
     return features, labels

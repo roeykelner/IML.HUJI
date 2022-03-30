@@ -12,19 +12,19 @@ class LinearRegression(BaseEstimator):
     Solving Ordinary Least Squares optimization problem
     """
 
-    def __init__(self, include_intercept: bool = True) -> LinearRegression:
+    def __init__(self, include_intercept: bool = True):
         """
         Instantiate a linear regression estimator
 
         Parameters
         ----------
         include_intercept: bool, default=True
-            Should fitted model include an intercept or not
+            Should the fitted model include an intercept or not
 
         Attributes
         ----------
         include_intercept_: bool
-            Should fitted model include an intercept or not
+            Should the fitted model include an intercept or not
 
         coefs_: ndarray of shape (n_features,) or (n_features+1,)
             Coefficients vector fitted by linear regression. To be set in
@@ -49,7 +49,11 @@ class LinearRegression(BaseEstimator):
         -----
         Fits model with or without an intercept depending on value of `self.include_intercept_`
         """
-        raise NotImplementedError()
+        if self.include_intercept:
+            # Adding a 1's column at the beginning of the X sample matrix
+            X = np.hstack((np.ones(X.shape[0]).reshape(-1, 1), X))
+        # As we've seen in class, the w_ estimator for RSS-loss function is the pseudo-inverse of X times y.
+        self.coefs_ = pinv(X) @ y
 
     def _predict(self, X: np.ndarray) -> np.ndarray:
         """
@@ -65,7 +69,7 @@ class LinearRegression(BaseEstimator):
         responses : ndarray of shape (n_samples, )
             Predicted responses of given samples
         """
-        raise NotImplementedError()
+        return X @ self.coefs_
 
     def _loss(self, X: np.ndarray, y: np.ndarray) -> float:
         """
@@ -84,4 +88,6 @@ class LinearRegression(BaseEstimator):
         loss : float
             Performance under MSE loss function
         """
-        raise NotImplementedError()
+        y_pred = self.predict(X)
+
+        return mean_square_error(y_pred, y)
