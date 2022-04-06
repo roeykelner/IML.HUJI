@@ -3,6 +3,7 @@ from typing import NoReturn
 from ...base import BaseEstimator
 import numpy as np
 from numpy.linalg import pinv
+from ...metrics.loss_functions import mean_square_error
 
 
 class LinearRegression(BaseEstimator):
@@ -33,6 +34,15 @@ class LinearRegression(BaseEstimator):
         super().__init__()
         self.include_intercept_, self.coefs_ = include_intercept, None
 
+    @staticmethod
+    def _add_ones(X: np.ndarray) -> np.ndarray:
+        """
+        Adds a column of ones on the left of the X matrix
+        @param X:
+        @return: X with ones columns to the left
+        """
+        return np.hstack((np.ones(X.shape[0]).reshape(-1, 1), X))
+
     def _fit(self, X: np.ndarray, y: np.ndarray) -> NoReturn:
         """
         Fit Least Squares model to given samples
@@ -49,9 +59,9 @@ class LinearRegression(BaseEstimator):
         -----
         Fits model with or without an intercept depending on value of `self.include_intercept_`
         """
-        if self.include_intercept:
+        if self.include_intercept_:
             # Adding a 1's column at the beginning of the X sample matrix
-            X = np.hstack((np.ones(X.shape[0]).reshape(-1, 1), X))
+            X = self._add_ones(X)
         # As we've seen in class, the w_ estimator for RSS-loss function is the pseudo-inverse of X times y.
         self.coefs_ = pinv(X) @ y
 
@@ -69,6 +79,9 @@ class LinearRegression(BaseEstimator):
         responses : ndarray of shape (n_samples, )
             Predicted responses of given samples
         """
+        if self.include_intercept_:
+            # Adding a 1's column at the beginning of the X sample matrix
+            X = self._add_ones(X)
         return X @ self.coefs_
 
     def _loss(self, X: np.ndarray, y: np.ndarray) -> float:
@@ -89,5 +102,4 @@ class LinearRegression(BaseEstimator):
             Performance under MSE loss function
         """
         y_pred = self.predict(X)
-
         return mean_square_error(y_pred, y)
