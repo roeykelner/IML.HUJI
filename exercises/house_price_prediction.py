@@ -24,10 +24,12 @@ def load_data(filename: str):
     Design matrix and response vector (prices) - either as a single
     DataFrame or a Tuple[DataFrame, Series]
     """
+
     # todo remove
-    pd.set_option("max_columns", None)  # show all cols
-    pd.set_option('max_colwidth', None)  # show full width of showing cols
-    pd.set_option("expand_frame_repr", False)  # print cols side by side as it's supposed to be
+
+    # pd.set_option("max_columns", None)  # show all cols
+    # pd.set_option('max_colwidth', None)  # show full width of showing cols
+    # pd.set_option("expand_frame_repr", False)  # print cols side by side as it's supposed to be
 
     df = pd.read_csv(filename)
 
@@ -105,6 +107,7 @@ if __name__ == '__main__':
     res = np.empty([len(range(10, 101)), 3])
     for i, p in enumerate(range(10, 101)):
         losses = []
+        # todo return to 10
         for j in range(10):
             frac_X = train_X.sample(frac=p / 100)
             frac_y = train_y[frac_X.index]
@@ -113,16 +116,31 @@ if __name__ == '__main__':
             losses.append(estimator.loss(test_X, test_y))
         res[i, 0] = p
         res[i, 1] = np.average(losses)
-        res[i, 2] = np.var(losses)
+        res[i, 2] = np.std(losses)
     # print(res)
-    percent_plot = px.scatter(x=res[:, 0], y=res[:, 1],
-                              title=f"MSE as a function of percentage sampled",
-                              labels={'x': 'Percentage', 'y': 'MSE'})
-    percent_plot.update_layout(title_x=0.5)
-    # percent_plot.show()
-    var_plot = px.scatter(x=res[:, 0], y=res[:, 2],
-                              title=f"Variance as a function of percentage sampled",
-                              labels={'x': 'Percentage', 'y': 'Variance'},
-                          log_y=True)
-    var_plot.update_layout(title_x=0.5)
-    var_plot.show()
+
+    fig = go.Figure(data=[
+        go.Scatter(x=res[:, 0], y=res[:, 1], mode="markers+lines", marker=dict(color="blue", opacity=.7),
+                   showlegend=False),
+        go.Scatter(x=res[:, 0], y=res[:, 1] - 2 * res[:, 2], fill=None, mode="lines", line=dict(color="lightgrey"),
+                   showlegend=False),
+        go.Scatter(x=res[:, 0], y=res[:, 1] + 2 * res[:, 2], fill='tonexty', mode="lines", line=dict(color="lightgrey"),
+                   showlegend=False)],
+        layout=go.Layout(
+            title="MSE as a function of percentage sampled",
+            title_x=0.5,
+            xaxis={"title": "Percentage"},
+            yaxis={"title": "MSE"}))
+    fig.show()
+
+# percent_plot = px.scatter(x=res[:, 0], y=res[:, 1],
+#                           title=f"MSE as a function of percentage sampled",
+#                           labels={'x': 'Percentage', 'y': 'MSE'})
+# percent_plot.update_layout(title_x=0.5)
+# percent_plot.show()
+# var_plot = px.scatter(x=res[:, 0], y=res[:, 2],
+#                       title=f"Variance as a function of percentage sampled",
+#                       labels={'x': 'Percentage', 'y': 'Variance'},
+#                       log_y=True)
+# var_plot.update_layout(title_x=0.5)
+# var_plot.show()
