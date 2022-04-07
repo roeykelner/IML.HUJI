@@ -11,6 +11,10 @@ import plotly.io as pio
 pio.templates.default = "simple_white"
 
 
+# pd.set_option("max_columns", None)  # show all cols
+# pd.set_option('max_colwidth', None)  # show full width of showing cols
+# pd.set_option("expand_frame_repr", False)  # print cols side by side as it's supposed to be
+
 def load_data(filename: str):
     """
     Load house prices dataset and preprocess data.
@@ -24,13 +28,6 @@ def load_data(filename: str):
     Design matrix and response vector (prices) - either as a single
     DataFrame or a Tuple[DataFrame, Series]
     """
-
-    # todo remove
-
-    # pd.set_option("max_columns", None)  # show all cols
-    # pd.set_option('max_colwidth', None)  # show full width of showing cols
-    # pd.set_option("expand_frame_repr", False)  # print cols side by side as it's supposed to be
-
     df = pd.read_csv(filename)
 
     # Removing samples with invalid values
@@ -45,8 +42,9 @@ def load_data(filename: str):
 
     # Removing ID and 'date' columns
     df = df.drop(columns=['id', 'date'])
-    prices = df['price']
 
+    # Extracting and removing the price column
+    prices = df['price']
     df = df.drop(columns=['price'])
 
     return tuple([df, prices])
@@ -74,13 +72,12 @@ def feature_evaluation(X: pd.DataFrame, y: pd.Series, output_path: str = ".") ->
 
     for feature in X:
         corr = (np.cov(X[feature], y) / (np.std(X[feature]) * np.std(y)))[0, 1]
-        fig = px.scatter(x=X[feature], y=y,
-                         title=f"House price as a function of {feature.capitalize()}\n"
+        feature_fig = px.scatter(x=X[feature], y=y,
+                         title=f"House price as a function of {feature.capitalize()}<br>"
                                f"Correlation = {corr:.3f}",
                          labels={'x': f'{feature.capitalize()}', 'y': 'House price'})
-        fig.update_layout(title_x=0.5)
-        # fig1.show()
-        fig.write_image(f"{output_path}/{feature}_vs_price.jpeg")
+        feature_fig.update_layout(title_x=0.5)
+        feature_fig.write_image(f"{output_path}/{feature}_vs_price.jpeg")
 
 
 if __name__ == '__main__':
@@ -89,12 +86,10 @@ if __name__ == '__main__':
     X, y = load_data("../datasets/house_prices.csv")
 
     # Question 2 - Feature evaluation with respect to response
-    # feature_evaluation(X,y, output_path="./images")
+    feature_evaluation(X, y, output_path="./ex2_corr_images")
 
     # Question 3 - Split samples into training- and testing sets.
     train_X, train_y, test_X, test_y = split_train_test(X, y)
-    # print(X, y, sep="\n")
-    # print(train_X, train_y, test_X, test_y, sep="\n\n")
 
     # Question 4 - Fit model over increasing percentages of the overall training data
     # For every percentage p in 10%, 11%, ..., 100%, repeat the following 10 times:
@@ -107,7 +102,6 @@ if __name__ == '__main__':
     res = np.empty([len(range(10, 101)), 3])
     for i, p in enumerate(range(10, 101)):
         losses = []
-        # todo return to 10
         for j in range(10):
             frac_X = train_X.sample(frac=p / 100)
             frac_y = train_y[frac_X.index]
@@ -117,7 +111,6 @@ if __name__ == '__main__':
         res[i, 0] = p
         res[i, 1] = np.average(losses)
         res[i, 2] = np.std(losses)
-    # print(res)
 
     fig = go.Figure(data=[
         go.Scatter(x=res[:, 0], y=res[:, 1], mode="markers+lines", marker=dict(color="blue", opacity=.7),
@@ -132,15 +125,3 @@ if __name__ == '__main__':
             xaxis={"title": "Percentage"},
             yaxis={"title": "MSE"}))
     fig.show()
-
-# percent_plot = px.scatter(x=res[:, 0], y=res[:, 1],
-#                           title=f"MSE as a function of percentage sampled",
-#                           labels={'x': 'Percentage', 'y': 'MSE'})
-# percent_plot.update_layout(title_x=0.5)
-# percent_plot.show()
-# var_plot = px.scatter(x=res[:, 0], y=res[:, 2],
-#                       title=f"Variance as a function of percentage sampled",
-#                       labels={'x': 'Percentage', 'y': 'Variance'},
-#                       log_y=True)
-# var_plot.update_layout(title_x=0.5)
-# var_plot.show()
