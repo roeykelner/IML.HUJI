@@ -1,3 +1,5 @@
+import numpy as np
+
 from IMLearn.learners.classifiers import Perceptron, LDA, GaussianNaiveBayes
 from typing import Tuple
 from utils import *
@@ -36,16 +38,25 @@ def run_perceptron():
     Create a line plot that shows the perceptron algorithm's training loss values (y-axis)
     as a function of the training iterations (x-axis).
     """
-    for n, f in [("Linearly Separable", "linearly_separable.npy"), ("Linearly Inseparable", "linearly_inseparable.npy")]:
+    for n, f in [("Linearly Separable", "linearly_separable.npy"),
+                 ("Linearly Inseparable", "linearly_inseparable.npy")]:
         # Load dataset
-        raise NotImplementedError()
+        samp, resp = load_dataset(f"..\datasets\{f}")
 
         # Fit Perceptron and record loss in each fit iteration
+        def callback_func(perc_obj: Perceptron, sample: np.ndarray, response: int):
+            # callback_func.iter_num += 1  # Counting the number of calls to the function
+            losses.append(perc_obj.loss(samp, resp))
+
+        # callback_func.iter_num = 0
         losses = []
-        raise NotImplementedError()
+        perc = Perceptron(callback=callback_func)
+        perc.fit(X=samp, y=resp)
 
         # Plot figure of loss as function of fitting iteration
-        raise NotImplementedError()
+        fig = px.scatter(x=range(len(losses)), y=losses, title=f"Loss over number of iterations, <br>{n}",
+                         labels={'x': "Fit Iterations", 'y': "Loss"})
+        fig.show()
 
 
 def get_ellipse(mu: np.ndarray, cov: np.ndarray):
@@ -103,4 +114,4 @@ def compare_gaussian_classifiers():
 if __name__ == '__main__':
     np.random.seed(0)
     run_perceptron()
-    compare_gaussian_classifiers()
+    # compare_gaussian_classifiers()
