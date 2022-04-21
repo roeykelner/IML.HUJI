@@ -2,6 +2,7 @@ from typing import NoReturn
 from ...base import BaseEstimator
 import numpy as np
 from numpy.linalg import det, inv
+from scipy.stats import multivariate_normal
 
 
 class LDA(BaseEstimator):
@@ -17,14 +18,15 @@ class LDA(BaseEstimator):
         The estimated features means for each class. To be set in `LDA.fit`
 
     self.cov_ : np.ndarray of shape (n_features,n_features)
-        The estimated features covariance. To be set in `LDA.fit`
+        The estimated features' covariance. To be set in `LDA.fit`
 
     self._cov_inv : np.ndarray of shape (n_features,n_features)
-        The inverse of the estimated features covariance. To be set in `LDA.fit`
+        The inverse of the estimated features' covariance. To be set in `LDA.fit`
 
     self.pi_: np.ndarray of shape (n_classes)
         The estimated class probabilities. To be set in `GaussianNaiveBayes.fit`
     """
+
     def __init__(self):
         """
         Instantiate an LDA classifier
@@ -46,7 +48,25 @@ class LDA(BaseEstimator):
         y : ndarray of shape (n_samples, )
             Responses of input data to fit to
         """
-        raise NotImplementedError()
+        self.classes_ = np.unique(y)
+        n_classes = self.classes_.shape[0]
+        d_features = X.shape[1]
+        m_samples = X.shape[0]
+        # n = {c: 0 for c in self.classes_}  # Initializing label count dictionary to zero
+        n = np.zeros(n_classes)
+        for k in y:
+            n[k] += 1  # Counting occurrences of each class/label
+        self.pi_ = n / m
+        # feature_sum = {k: np.zeros(d_features) for k in self.classes_}  # Initializing sum dict to zeros
+        feature_sum = np.zeros(shape=(n_classes, d_features))
+        for x_i, y_i in zip(X, y):
+            feature_sum[y_i] += x_i  # Summing the feature vectors of each class
+        self.mu_ = feature_sum / n[:, None]  # Dividing every feature by number of occurrences
+        sum_cov_matrices = np.zeros(shape=(d_features, d_features))
+        for x_i, y_i in zip(X, y):
+            sum_cov_matrices += np.outer(x_i, self.mu_[y_i])
+        self.cov_ = sum_cov_matrices / m_samples
+        self._cov_inv = np.linalg.inv(self.cov_)
 
     def _predict(self, X: np.ndarray) -> np.ndarray:
         """
@@ -62,7 +82,21 @@ class LDA(BaseEstimator):
         responses : ndarray of shape (n_samples, )
             Predicted responses of given samples
         """
-        raise NotImplementedError()
+        m_samples = X.shape[0]
+        d_features = X.shape[1]
+        y_pred = np.array(m_samples)
+        for i, x_i in enumerate(X):
+            max_val = -1 * np.infty
+            max_arg = -1
+            for k in self.classes_:
+                a_k = self._cov_inv @ self.mu_[k]
+                b_k = np.log(self.pi_[k]) - 0.5 * self.mu_[k].T @ self._cov_inv @ self.mu_[k]
+                val = a_k.T @ x_i + b_k
+                if val > max_val:
+                    max_val = val
+                    max_arg = k
+            y_pred[i] = max_arg
+        return y_pred
 
     def likelihood(self, X: np.ndarray) -> np.ndarray:
         """
@@ -81,8 +115,15 @@ class LDA(BaseEstimator):
         """
         if not self.fitted_:
             raise ValueError("Estimator must first be fitted before calling `likelihood` function")
+        m_samples = X.shape[0]
+        n_classes = self.classes_.shape[0]
+        lkl = np.zeros(shape=(m_samples, n_classes))
+        for i in range(m_samples):
+            for k in n_classes:
+                gaussian = multivariate_normal(mean=self.mu_[k], cov=self.cov_)
+                lkl[i,k] = gaussian.pdf(X[i])*self.pi_[k]
+        return lkl
 
-        raise NotImplementedError()
 
     def _loss(self, X: np.ndarray, y: np.ndarray) -> float:
         """
@@ -99,7 +140,7 @@ class LDA(BaseEstimator):
         Returns
         -------
         loss : float
-            Performance under missclassification loss function
+            Performance under misclassification loss function
         """
         from ...metrics import misclassification_error
-        raise NotImplementedError()
+        return misclassification_error(y_true=y, y_pred=self.predict(X))

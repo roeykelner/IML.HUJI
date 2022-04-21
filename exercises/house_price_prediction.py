@@ -73,9 +73,9 @@ def feature_evaluation(X: pd.DataFrame, y: pd.Series, output_path: str = ".") ->
     for feature in X:
         corr = (np.cov(X[feature], y) / (np.std(X[feature]) * np.std(y)))[0, 1]
         feature_fig = px.scatter(x=X[feature], y=y,
-                         title=f"House price as a function of {feature.capitalize()}<br>"
-                               f"Correlation = {corr:.3f}",
-                         labels={'x': f'{feature.capitalize()}', 'y': 'House price'})
+                                 title=f"House price as a function of {feature.capitalize()}<br>"
+                                       f"Correlation = {corr:.3f}",
+                                 labels={'x': f'{feature.capitalize()}', 'y': 'House price'})
         feature_fig.update_layout(title_x=0.5)
         feature_fig.write_image(f"{output_path}/{feature}_vs_price.jpeg")
 
