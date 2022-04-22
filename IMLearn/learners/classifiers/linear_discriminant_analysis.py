@@ -52,19 +52,17 @@ class LDA(BaseEstimator):
         n_classes = self.classes_.shape[0]
         d_features = X.shape[1]
         m_samples = X.shape[0]
-        # n = {c: 0 for c in self.classes_}  # Initializing label count dictionary to zero
         n = np.zeros(n_classes)
         for k in y:
             n[k] += 1  # Counting occurrences of each class/label
-        self.pi_ = n / m
-        # feature_sum = {k: np.zeros(d_features) for k in self.classes_}  # Initializing sum dict to zeros
+        self.pi_ = n / m_samples
         feature_sum = np.zeros(shape=(n_classes, d_features))
         for x_i, y_i in zip(X, y):
             feature_sum[y_i] += x_i  # Summing the feature vectors of each class
         self.mu_ = feature_sum / n[:, None]  # Dividing every feature by number of occurrences
         sum_cov_matrices = np.zeros(shape=(d_features, d_features))
         for x_i, y_i in zip(X, y):
-            sum_cov_matrices += np.outer(x_i, self.mu_[y_i])
+            sum_cov_matrices += np.outer(x_i - self.mu_[y_i], x_i - self.mu_[y_i])
         self.cov_ = sum_cov_matrices / m_samples
         self._cov_inv = np.linalg.inv(self.cov_)
 
@@ -82,21 +80,7 @@ class LDA(BaseEstimator):
         responses : ndarray of shape (n_samples, )
             Predicted responses of given samples
         """
-        m_samples = X.shape[0]
-        d_features = X.shape[1]
-        y_pred = np.array(m_samples)
-        for i, x_i in enumerate(X):
-            max_val = -1 * np.infty
-            max_arg = -1
-            for k in self.classes_:
-                a_k = self._cov_inv @ self.mu_[k]
-                b_k = np.log(self.pi_[k]) - 0.5 * self.mu_[k].T @ self._cov_inv @ self.mu_[k]
-                val = a_k.T @ x_i + b_k
-                if val > max_val:
-                    max_val = val
-                    max_arg = k
-            y_pred[i] = max_arg
-        return y_pred
+        return np.argmax(self.likelihood(X), axis=1)
 
     def likelihood(self, X: np.ndarray) -> np.ndarray:
         """
@@ -118,12 +102,12 @@ class LDA(BaseEstimator):
         m_samples = X.shape[0]
         n_classes = self.classes_.shape[0]
         lkl = np.zeros(shape=(m_samples, n_classes))
-        for i in range(m_samples):
-            for k in n_classes:
-                gaussian = multivariate_normal(mean=self.mu_[k], cov=self.cov_)
-                lkl[i,k] = gaussian.pdf(X[i])*self.pi_[k]
+        for i, x_i in enumerate(X):
+            for k in self.classes_:
+                a_k = self._cov_inv @ self.mu_[k]
+                b_k = np.log(self.pi_[k]) - 0.5 * self.mu_[k].T @ self._cov_inv @ self.mu_[k]
+                lkl[i, k] = a_k.T @ x_i + b_k
         return lkl
-
 
     def _loss(self, X: np.ndarray, y: np.ndarray) -> float:
         """

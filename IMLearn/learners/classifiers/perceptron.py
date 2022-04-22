@@ -106,7 +106,6 @@ class Perceptron(BaseEstimator):
                 return
             self.coefs_ = self.coefs_ + y[i] * X[i]
             self.callback_(self, X[i], y[i])  # Calling the provided function with the instance, sample, and response
-            # todo check if good
 
     def _predict(self, X: np.ndarray) -> np.ndarray:
         """
@@ -124,7 +123,7 @@ class Perceptron(BaseEstimator):
         """
         if self.include_intercept_:
             X = self._add_ones(X)
-        return np.sign(X @ self.coefs_)  # The halfspace classifier as defined in class #todo map 0 to 1
+        return np.where(X @ self.coefs_ >=0 , 1, -1)  # The halfspace classifier as defined in class
 
     def _loss(self, X: np.ndarray, y: np.ndarray) -> float:
         """
