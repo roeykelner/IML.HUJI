@@ -54,8 +54,9 @@ def run_perceptron():
         perc.fit(X=samp, y=resp)
 
         # Plot figure of loss as function of fitting iteration
-        fig = px.scatter(x=range(len(losses)), y=losses, title=f"Loss over number of iterations, <br>{n}",
+        fig = px.scatter(x=range(len(losses)), y=losses, title=f"<b>Loss over number of iterations</b><br>{n} Dataset",
                          labels={'x': "Fit Iterations", 'y': "Loss"})
+        fig.update_layout(margin_t=120, title_x = 0.5)
         fig.show()
 
 

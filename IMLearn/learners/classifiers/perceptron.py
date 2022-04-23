@@ -97,7 +97,7 @@ class Perceptron(BaseEstimator):
         dims = X.shape[1]
         if self.include_intercept_:
             X = self._add_ones(X)
-            dims +=  1
+            dims += 1
         self.coefs_ = np.zeros(dims)
         self.fitted_ = True
         for t in range(self.max_iter_):
@@ -123,7 +123,7 @@ class Perceptron(BaseEstimator):
         """
         if self.include_intercept_:
             X = self._add_ones(X)
-        return np.where(X @ self.coefs_ >=0 , 1, -1)  # The halfspace classifier as defined in class
+        return np.where(X @ self.coefs_ >= 0, 1, -1)  # The halfspace classifier as defined in class
 
     def _loss(self, X: np.ndarray, y: np.ndarray) -> float:
         """
