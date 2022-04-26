@@ -2,7 +2,6 @@ from typing import NoReturn
 from ...base import BaseEstimator
 import numpy as np
 from numpy.linalg import det, inv
-from scipy.stats import multivariate_normal
 
 
 class LDA(BaseEstimator):
@@ -63,8 +62,8 @@ class LDA(BaseEstimator):
         sum_cov_matrices = np.zeros(shape=(d_features, d_features))
         for x_i, y_i in zip(X, y):
             sum_cov_matrices += np.outer(x_i - self.mu_[y_i], x_i - self.mu_[y_i])
-        self.cov_ = sum_cov_matrices / m_samples
-        self._cov_inv = np.linalg.inv(self.cov_)
+        self.cov_ = sum_cov_matrices / (m_samples - n_classes)
+        self._cov_inv = inv(self.cov_)
 
     def _predict(self, X: np.ndarray) -> np.ndarray:
         """

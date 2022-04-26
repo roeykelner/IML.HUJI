@@ -45,7 +45,11 @@ class GaussianNaiveBayes(BaseEstimator):
         """
         self.classes_ = np.unique(y)
         n_classes = self.classes_.shape[0]
-        d_features = X.shape[1]
+        d_features = 1
+        if X.ndim ==2:
+            d_features = X.shape[1]
+    
+
         m_samples = X.shape[0]
         n = np.zeros(n_classes).astype(int)
         for k in y:
@@ -101,7 +105,7 @@ class GaussianNaiveBayes(BaseEstimator):
 
         # Using the expression derived in question 3b:
         m_samples = X.shape[0]
-        d_features = X.shape[1]
+        d_features = X.shape[1] if X.ndim == 2 else 1
         n_classes = self.classes_.shape[0]
         lkl = np.zeros((m_samples, n_classes))
         for i, x_i in enumerate(X):
