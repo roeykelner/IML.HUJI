@@ -48,10 +48,12 @@ def run_perceptron():
             # callback_func.iter_num += 1  # Counting the number of calls to the function
             losses.append(perc_obj.loss(samp, resp))
 
+
         # callback_func.iter_num = 0
         losses = []
-        perc = Perceptron(callback=callback_func)
+        perc = Perceptron(callback=callback_func, include_intercept=False)
         perc.fit(X=samp, y=resp)
+        print(f"losses_len = {len(losses)}")
 
         # Plot figure of loss as function of fitting iteration
         fig = px.scatter(x=range(len(losses)), y=losses, title=f"<b>Loss over number of iterations</b><br>{n} Dataset",
