@@ -3,6 +3,8 @@ code\ examples/*.png
 code\ examples/*.gif
 *.png
 *.gif
+*code-workspace
+.vscode
 figures/*.png
 .idea
 **__pycache__
