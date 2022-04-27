@@ -112,7 +112,7 @@ def compare_gaussian_classifiers():
                          "accuracy": accuracy(y_true=y_train, y_pred=lda_pred)}}
 
         # Plot a figure with two subplots, showing the Gaussian Naive Bayes predictions on the left and LDA predictions
-        # on the right. Plot title should specify dataset used and subplot titles should specify algorithm and accuracy
+        # n the right. Plot title should specify dataset used and subplot titles should specify algorithm and accuracy
         # Create subplots
         fig = make_subplots(rows=1, cols=2,
                             subplot_titles=[
