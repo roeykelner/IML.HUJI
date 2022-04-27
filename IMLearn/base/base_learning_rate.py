@@ -1,7 +1,7 @@
 from abc import ABC
 
 
-class BaseLR(ABC):
+class BaseLearningRate(ABC):
     """
     Base class of learning rates (step size) strategies to be used in different descent methods
     """
