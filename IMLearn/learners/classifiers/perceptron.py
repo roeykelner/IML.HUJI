@@ -59,11 +59,12 @@ class Perceptron(BaseEstimator):
 
     @staticmethod
     def _add_ones(X: np.ndarray) -> np.ndarray:
+        # noinspection GrazieInspection
         """
-        Adds a column of ones on the left of the X matrix
-        @param X:
-        @return: X with ones columns to the left
-        """
+                Adds a column of ones on the left of the X matrix
+                @param X:
+                @return: X with ones columns to the left
+                """
         return np.hstack((np.ones(X.shape[0]).reshape(-1, 1), X))
 
     def _fit(self, X: np.ndarray, y: np.ndarray) -> NoReturn:
@@ -89,9 +90,9 @@ class Perceptron(BaseEstimator):
             @return: First misclassified index.
             Returns -1 if not found.
             """
-            for i in range(y.shape[0]):
-                if y[i].astype(int) * (self.coefs_ @ X[i]) <= 0:
-                    return i
+            for j in range(y.shape[0]):
+                if y[j].astype(int) * (self.coefs_ @ X[j]) <= 0:
+                    return j
             return -1
 
         dims = X.shape[1]

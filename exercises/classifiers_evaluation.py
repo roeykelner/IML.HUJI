@@ -1,5 +1,3 @@
-import numpy as np
-
 from IMLearn.learners.classifiers import Perceptron, LDA, GaussianNaiveBayes
 from typing import Tuple
 from utils import *
@@ -48,17 +46,16 @@ def run_perceptron():
             # callback_func.iter_num += 1  # Counting the number of calls to the function
             losses.append(perc_obj.loss(samp, resp))
 
-
-        # callback_func.iter_num = 0
         losses = []
-        perc = Perceptron(callback=callback_func, include_intercept=False)
+        perc = Perceptron(callback=callback_func)
         perc.fit(X=samp, y=resp)
-        print(f"losses_len = {len(losses)}")
 
         # Plot figure of loss as function of fitting iteration
-        fig = px.scatter(x=range(len(losses)), y=losses, title=f"<b>Loss over number of iterations</b><br>{n} Dataset",
+        fig = px.scatter(x=range(len(losses)), y=losses,
+                         title=f"<b>Loss over number of iterations</b><br>{n} Dataset, stopped after {len(losses)}"
+                               f" iterations.",
                          labels={'x': "Fit Iterations", 'y': "Loss"})
-        fig.update_layout(margin_t=120, title_x = 0.5)
+        fig.update_layout(margin_t=120, title_x=0.5)
         fig.show()
 
 
@@ -84,6 +81,7 @@ def get_ellipse(mu: np.ndarray, cov: np.ndarray):
     xs = (l1 * np.cos(theta) * np.cos(t)) - (l2 * np.sin(theta) * np.sin(t))
     ys = (l1 * np.sin(theta) * np.cos(t)) + (l2 * np.cos(theta) * np.sin(t))
 
+    # noinspection PyTypeChecker
     return go.Scatter(x=mu[0] + xs, y=mu[1] + ys, mode="lines", marker_color="black", showlegend=False)
 
 

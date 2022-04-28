@@ -19,9 +19,9 @@ def load_data(filename: str):
     2) Tuple of pandas.DataFrame and Series
     3) Tuple of ndarray of shape (n_samples, n_features) and ndarray of shape (n_samples,)
     """
-    # TODO - replace below code with any desired preprocessing
+
     full_data = pd.read_csv(filename).dropna().drop_duplicates()
-    features = full_data[["booking_datetime",  # TODO Test data is on different dates
+    features = full_data[["booking_datetime",
                           "hotel_area_code",
                           "no_of_children",
                           "original_selling_amount"
