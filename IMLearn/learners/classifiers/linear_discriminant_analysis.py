@@ -1,9 +1,10 @@
 from typing import NoReturn
 from ...base import BaseEstimator
 import numpy as np
-from numpy.linalg import det, inv
+from numpy.linalg import inv
 
 
+# noinspection DuplicatedCode
 class LDA(BaseEstimator):
     """
     Linear Discriminant Analysis (LDA) classifier
