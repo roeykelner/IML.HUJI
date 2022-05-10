@@ -1,7 +1,6 @@
 from typing import NoReturn
 from ...base import BaseEstimator
 import numpy as np
-from scipy.stats import norm
 
 
 # noinspection DuplicatedCode
@@ -46,9 +45,8 @@ class GaussianNaiveBayes(BaseEstimator):
         self.classes_ = np.unique(y)
         n_classes = self.classes_.shape[0]
         d_features = 1
-        if X.ndim ==2:
+        if X.ndim == 2:
             d_features = X.shape[1]
-    
 
         m_samples = X.shape[0]
         n = np.zeros(n_classes).astype(int)

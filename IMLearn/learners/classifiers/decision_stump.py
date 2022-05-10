@@ -50,9 +50,6 @@ class DecisionStump(BaseEstimator):
         X : ndarray of shape (n_samples, n_features)
             Input data to predict responses for
 
-        y : ndarray of shape (n_samples, )
-            Responses of input data to fit to
-
         Returns
         -------
         responses : ndarray of shape (n_samples, )
@@ -63,7 +60,7 @@ class DecisionStump(BaseEstimator):
         Feature values strictly below threshold are predicted as `-sign` whereas values which equal
         to or above the threshold are predicted as `sign`
         """
-        raise NotImplementedError()
+        return np.where(X-self.threshold_ < 0, -1*self.sign_, self.sign_)
 
     def _find_threshold(self, values: np.ndarray, labels: np.ndarray, sign: int) -> Tuple[float, float]:
         """
@@ -80,7 +77,7 @@ class DecisionStump(BaseEstimator):
             The labels to compare against
 
         sign: int
-            Predicted label assigned to values equal to or above threshold
+            Predicted label assigned to the values equal to or above threshold
 
         Returns
         -------
@@ -88,7 +85,7 @@ class DecisionStump(BaseEstimator):
             Threshold by which to perform split
 
         thr_err: float between 0 and 1
-            Misclassificaiton error of returned threshold
+            Misclassification error of returned threshold
 
         Notes
         -----
@@ -109,9 +106,11 @@ class DecisionStump(BaseEstimator):
         y : ndarray of shape (n_samples, )
             True labels of test samples
 
+
+
         Returns
         -------
         loss : float
-            Performance under missclassification loss function
+            Performance under misclassification loss function
         """
         raise NotImplementedError()
