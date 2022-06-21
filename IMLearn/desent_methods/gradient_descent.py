@@ -137,18 +137,17 @@ class GradientDescent:
 
         """
 
-        w_t = np.random.randn(X.shape[1])
-        prev_w_t = np.full(X.shape[1], np.inf)
+        w_t = f.weights_
+        # prev_w_t = np.full(X.shape[1], np.inf)
         delta = self.tol_ + 1
         avg = self.Avg(w_t)
-        f.weights = w_t
         best_w = {'w': w_t, 'val': f.compute_output()}
-        t = 0
-        while t < self.max_iter_ and delta > self.tol_:
+        t = 1
+        while t <= self.max_iter_ and delta > self.tol_:
             eta = self.learning_rate_.lr_step()
             f.weights = w_t
             v_t = f.compute_jacobian()
-            w_t, prev_w_t = w_t - eta @ v_t, w_t
+            w_t, prev_w_t = w_t - eta * v_t, w_t
             delta = np.linalg.norm(w_t - prev_w_t)
             avg.add_w(w_t)
 
