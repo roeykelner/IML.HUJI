@@ -144,7 +144,7 @@ class GradientDescent:
         best_w = {'w': w_t, 'val': f.compute_output()}
         t = 1
         while t <= self.max_iter_ and delta > self.tol_:
-            eta = self.learning_rate_.lr_step()
+            eta = self.learning_rate_.lr_step(t)
             f.weights = w_t
             v_t = f.compute_jacobian()
             w_t, prev_w_t = w_t - eta * v_t, w_t

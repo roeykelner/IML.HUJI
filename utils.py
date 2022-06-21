@@ -61,17 +61,14 @@ class_symbols = np.array(["circle", "x", "diamond"])
 class_colors = lambda n: [custom[i] for i in np.linspace(0, len(custom) - 1, n).astype(int)]
 
 
-def decision_surface(predict, xrange, yrange, density=120, dotted=False, colorscale=custom, showscale=True, T=250):
+def decision_surface(predict, xrange, yrange, density=120, dotted=False, colorscale=custom, showscale=True):
     xrange, yrange = np.linspace(*xrange, density), np.linspace(*yrange, density)
     xx, yy = np.meshgrid(xrange, yrange)
-    pred = predict(np.c_[xx.ravel(), yy.ravel()], T)
+    pred = predict(np.c_[xx.ravel(), yy.ravel()])
 
     if dotted:
-        return go.Scatter(x=xx.ravel(), y=yy.ravel(), opacity=1, mode="markers",
-                          marker=dict(color=pred, size=1, colorscale=colorscale, reversescale=False), hoverinfo="skip",
-                          showlegend=False)
-    return go.Contour(x=xrange, y=yrange, z=pred.reshape(xx.shape), colorscale=colorscale, reversescale=False,
-                      opacity=.7, connectgaps=True, hoverinfo="skip", showlegend=False, showscale=showscale)
+        return go.Scatter(x=xx.ravel(), y=yy.ravel(), opacity=1, mode="markers", marker=dict(color=pred, size=1, colorscale=colorscale, reversescale=False), hoverinfo="skip", showlegend=False)
+    return go.Contour(x=xrange, y=yrange, z=pred.reshape(xx.shape), colorscale=colorscale, reversescale=False, opacity=.7, connectgaps=True, hoverinfo="skip", showlegend=False, showscale=showscale)
 
 
 def animation_to_gif(fig, filename, frame_duration=100, width=1200, height=800):

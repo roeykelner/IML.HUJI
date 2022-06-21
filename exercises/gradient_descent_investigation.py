@@ -18,36 +18,29 @@ def plot_descent_path(module: Type[BaseModule],
                       yrange=(-1.5, 1.5)) -> go.Figure:
     """
     Plot the descent path of the gradient descent algorithm
-
     Parameters:
     -----------
     module: Type[BaseModule]
         Module type for which descent path is plotted
-
     descent_path: np.ndarray of shape (n_iterations, 2)
         Set of locations if 2D parameter space being the regularization path
-
     title: str, default=""
         Setting details to add to plot title
-
     xrange: Tuple[float, float], default=(-1.5, 1.5)
         Plot's x-axis range
-
     yrange: Tuple[float, float], default=(-1.5, 1.5)
         Plot's x-axis range
-
     Return:
     -------
     fig: go.Figure
         Plotly figure showing module's value in a grid of [xrange]x[yrange] over which regularization path is shown
-
     Example:
     --------
     fig = plot_descent_path(IMLearn.desent_methods.modules.L1, np.ndarray([[1,1],[0,0]]))
     fig.show()
     """
 
-    def predict_(w, T):
+    def predict_(w):
         return np.array([module(weights=wi).compute_output() for wi in w])
 
     from utils import decision_surface
@@ -56,7 +49,7 @@ def plot_descent_path(module: Type[BaseModule],
                                  marker_color="black")],
                      layout=go.Layout(xaxis=dict(range=xrange),
                                       yaxis=dict(range=yrange),
-                                      title=f"GD Descent Path {title}"))
+                                      title=f"GD Descent Path {title}", margin=dict(l=0, r=0, b=0, t=60)))
 
 
 def get_gd_state_recorder_callback() -> Tuple[Callable[[], None], List[np.ndarray], List[np.ndarray]]:
@@ -91,22 +84,43 @@ def compare_fixed_learning_rates(init: np.ndarray = np.array([np.sqrt(2), np.e /
         for fixed_eta in etas:
             callback, values, weights = get_gd_state_recorder_callback()
             gd = GradientDescent(FixedLR(fixed_eta), callback=callback)
-            module = module_type(init)
+            module = module_type(init.copy())
             gd.fit(f=module, X=None, y=None)
-            plot_descent_path(module_type, np.array(weights), f"<br>Module = {module_type.__name__}, eta = {fixed_eta}").show()
+            # plot_descent_path(module=module_type, descent_path=np.array(weights), # todo reshow
+            #                   title=f"<br>Module = {module_type.__name__}, eta = {fixed_eta}").show()
+            # plot the values as a function of t
+            fig = go.Figure(data=[go.Scatter(x=list(range(len(values))), y=values, mode="lines + markers")],
+                            layout=go.Layout(
+                                title=f"GD Objective Value vs. Iteration for Module {module_type.__name__}",
+                                xaxis=dict(title="Iteration"), yaxis=dict(title="Objective Value")))
+            # fig.show() #todo reshow
+            # print(f"Module {module_type.__name__}, eta = {fixed_eta}, lowest loss = {min(values)}")
 
 
 def compare_exponential_decay_rates(init: np.ndarray = np.array([np.sqrt(2), np.e / 3]),
                                     eta: float = .1,
                                     gammas: Tuple[float] = (.9, .95, .99, 1)):
     # Optimize the L1 objective using different decay-rate values of the exponentially decaying learning rate
-    raise NotImplementedError()
+    fig5 = go.Figure()
+    weights_95 =[]
+    for gamma in gammas:
+        callback, values, weights = get_gd_state_recorder_callback()
+        gd = GradientDescent(ExponentialLR(eta, gamma), callback=callback)
+        module = L1(init.copy())
+        gd.fit(f=module, X=None, y=None)
+        if gamma == .95:
+            weights_95 = weights
+        fig5.add_trace(go.Scatter(x=list(range(len(values))), y=values, mode="lines + markers",
+                                    name=f"gamma = {gamma}"))
 
     # Plot algorithm's convergence for the different values of gamma
-    raise NotImplementedError()
-
+    fig5.update_layout(title="GD Objective Value vs. Iteration for Module L1",
+                       xaxis=dict(title="Iteration"), yaxis=dict(title="Objective Value"))
+    fig5.show()
     # Plot descent path for gamma=0.95
-    raise NotImplementedError()
+    fig7 = plot_descent_path(module=L1, descent_path=np.array(weights_95), title="gamma = 0.95")
+    fig7.show()
+
 
 
 def load_data(path: str = "../datasets/SAheart.data", train_portion: float = .8) -> \
@@ -155,6 +169,8 @@ def fit_logistic_regression():
 
 if __name__ == '__main__':
     np.random.seed(0)
-    compare_fixed_learning_rates()
-    # compare_exponential_decay_rates()
+    # compare_fixed_learning_rates()
+    compare_exponential_decay_rates()
     # fit_logistic_regression()
+    # fig = plot_descent_path(L1, np.array([[1, 1], [0.5, 0.5], [0, 0]]))
+    # fig.show()
