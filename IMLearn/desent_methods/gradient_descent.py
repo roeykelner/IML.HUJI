@@ -39,12 +39,13 @@ class GradientDescent:
         Callable function receives as input any argument relevant for the current GD iteration. Arguments
         are specified in the `GradientDescent.fit` function
     """
+
     def __init__(self,
                  learning_rate: BaseLR = FixedLR(1e-3),
                  tol: float = 1e-5,
                  max_iter: int = 1000,
                  out_type: str = "last",
-                 callback: Callable[[GradientDescent, ...], None] = default_callback):
+                 callback: Callable[[...], None] = default_callback):
         """
         Instantiate a new instance of the GradientDescent class
 
@@ -76,6 +77,22 @@ class GradientDescent:
         self.max_iter_ = max_iter
         self.callback_ = callback
 
+    class Avg:
+        def __init__(self, initial_w):
+            self.sum = initial_w
+            self.average = initial_w
+            self.count = 1
+
+        def add_w(self, w):
+            self.count += 1
+            self.sum += w
+            self.average = self.sum / self.count
+            return self.average
+
+        def get_average(self):
+            return self.average
+
+    # noinspection PyUnboundLocalVariable
     def fit(self, f: BaseModule, X: np.ndarray, y: np.ndarray):
         """
         Optimize module using Gradient Descent iterations over given input samples and responses
@@ -119,4 +136,32 @@ class GradientDescent:
                 Euclidean norm of w^(t)-w^(t-1)
 
         """
-        raise NotImplementedError()
+
+        w_t = np.random.randn(X.shape[1])
+        prev_w_t = np.full(X.shape[1], np.inf)
+        delta = self.tol_ + 1
+        avg = self.Avg(w_t)
+        f.weights = w_t
+        best_w = {'w': w_t, 'val': f.compute_output()}
+        t = 0
+        while t < self.max_iter_ and delta > self.tol_:
+            eta = self.learning_rate_.lr_step()
+            f.weights = w_t
+            v_t = f.compute_jacobian()
+            w_t, prev_w_t = w_t - eta @ v_t, w_t
+            delta = np.linalg.norm(w_t - prev_w_t)
+            avg.add_w(w_t)
+
+            cur_val = f.compute_output()
+            if cur_val < best_w['val']:
+                best_w = {'w': w_t, 'val': cur_val}
+            # noinspection PyArgumentList
+            self.callback_(solver=self, weights=w_t, val=cur_val, grad=v_t, t=t, eta=eta, delta=delta)
+            t += 1
+
+        if self.out_type_ == 'last':
+            return w_t
+        if self.out_type_ == 'average':
+            return avg.get_average()
+        return best_w['w']
+
