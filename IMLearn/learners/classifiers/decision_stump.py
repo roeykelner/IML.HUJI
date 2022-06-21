@@ -3,6 +3,11 @@ from typing import Tuple, NoReturn
 from ...base import BaseEstimator
 import numpy as np
 from itertools import product
+from ...metrics import misclassification_error
+
+
+def _weighted_mce(y_true: np.ndarray, y_pred: np.ndarray, m_samples: int):
+    return np.sum(np.abs(y_true[y_true * y_pred < 0])) / m_samples
 
 
 class DecisionStump(BaseEstimator):
@@ -18,8 +23,9 @@ class DecisionStump(BaseEstimator):
         The index of the feature by which to split the data
 
     self.sign_: int
-        The label to predict for samples where the value of the j'th feature is about the threshold
+        The label to predict for samples where the value of the j'th feature is above the threshold
     """
+
     def __init__(self) -> DecisionStump:
         """
         Instantiate a Decision stump classifier
@@ -39,7 +45,14 @@ class DecisionStump(BaseEstimator):
         y : ndarray of shape (n_samples, )
             Responses of input data to fit to
         """
-        raise NotImplementedError()
+        min_thr, min_err, min_j, min_sign = None, np.infty, None, None
+        for j, j_col in enumerate(X.T):
+            for sign in [-1, 1]:
+                j_thr, j_err = self._find_threshold(j_col, y, sign)
+                if j_err < min_err:
+                    min_thr, min_err, min_j, min_sign = j_thr, j_err, j, sign
+
+        self.threshold_, self.j_, self.sign_ = min_thr, min_j, min_sign
 
     def _predict(self, X: np.ndarray) -> np.ndarray:
         """
@@ -60,9 +73,10 @@ class DecisionStump(BaseEstimator):
         Feature values strictly below threshold are predicted as `-sign` whereas values which equal
         to or above the threshold are predicted as `sign`
         """
-        return np.where(X-self.threshold_ < 0, -1*self.sign_, self.sign_)
+        return np.where(X[:, self.j_] >= self.threshold_, self.sign_, -1 * self.sign_)
 
-    def _find_threshold(self, values: np.ndarray, labels: np.ndarray, sign: int) -> Tuple[float, float]:
+    @staticmethod
+    def _find_threshold(values: np.ndarray, labels: np.ndarray, sign: int) -> Tuple[float, float]:
         """
         Given a feature vector and labels, find a threshold by which to perform a split
         The threshold is found according to the value minimizing the misclassification
@@ -92,7 +106,14 @@ class DecisionStump(BaseEstimator):
         For every tested threshold, values strictly below threshold are predicted as `-sign` whereas values
         which equal to or above the threshold are predicted as `sign`
         """
-        raise NotImplementedError()
+        best_thr, min_err = None, np.infty
+        for v in values:
+            prediction = np.where(values < v, -1 * sign, sign)
+            error = _weighted_mce(labels, prediction, len(values))
+            if error < min_err:
+                best_thr, min_err = v, error
+
+        return best_thr, min_err
 
     def _loss(self, X: np.ndarray, y: np.ndarray) -> float:
         """
@@ -106,11 +127,9 @@ class DecisionStump(BaseEstimator):
         y : ndarray of shape (n_samples, )
             True labels of test samples
 
-
-
         Returns
         -------
         loss : float
             Performance under misclassification loss function
         """
-        raise NotImplementedError()
+        return misclassification_error(y, self.predict(X))

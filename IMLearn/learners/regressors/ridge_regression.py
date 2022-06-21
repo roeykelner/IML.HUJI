@@ -2,6 +2,17 @@ from __future__ import annotations
 from typing import NoReturn
 from ...base import BaseEstimator
 import numpy as np
+from ...metrics.loss_functions import mean_square_error
+
+
+def add_ones(X: np.ndarray) -> np.ndarray:
+    # noinspection GrazieInspection
+    """
+            Adds a column of ones on the left of the X matrix
+            @param X:
+            @return: X with ones columns to the left
+            """
+    return np.hstack((np.ones(X.shape[0]).reshape(-1, 1), X))
 
 
 class RidgeRegression(BaseEstimator):
@@ -33,7 +44,6 @@ class RidgeRegression(BaseEstimator):
             `LinearRegression.fit` function.
         """
 
-
         """
         Initialize a ridge regression model
         :param lam: scalar value of regularization parameter
@@ -59,7 +69,14 @@ class RidgeRegression(BaseEstimator):
         -----
         Fits model with or without an intercept depending on value of `self.include_intercept_`
         """
-        raise NotImplementedError()
+        if self.include_intercept_:
+            X = add_ones(X)
+        u, singular_vals, vh = np.linalg.svd(X)
+        sig_lam = np.zeros(X.shape).T
+
+        special_singulars = singular_vals / (singular_vals ** 2 + self.lam_)
+        sig_lam[:X.shape[1], :X.shape[1]] = np.diag(special_singulars)
+        self.coefs_ = vh.T @ sig_lam @ u.T @ y
 
     def _predict(self, X: np.ndarray) -> np.ndarray:
         """
@@ -75,7 +92,10 @@ class RidgeRegression(BaseEstimator):
         responses : ndarray of shape (n_samples, )
             Predicted responses of given samples
         """
-        raise NotImplementedError()
+        if self.include_intercept_:
+            # Adding a 1's column at the beginning of the X sample matrix
+            X = add_ones(X)
+        return X @ self.coefs_
 
     def _loss(self, X: np.ndarray, y: np.ndarray) -> float:
         """
@@ -94,4 +114,4 @@ class RidgeRegression(BaseEstimator):
         loss : float
             Performance under MSE loss function
         """
-        raise NotImplementedError()
+        return mean_square_error(y, self.predict(X))
