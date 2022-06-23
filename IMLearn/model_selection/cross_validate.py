@@ -6,7 +6,6 @@ from numpy import ceil
 
 from IMLearn import BaseEstimator
 
-
 def cross_validate(estimator: BaseEstimator, X: np.ndarray, y: np.ndarray,
                    scoring: Callable[[np.ndarray, np.ndarray, ...], float], k: int = 5) -> Tuple[float, float]:
     """

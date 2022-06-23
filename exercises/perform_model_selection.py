@@ -139,7 +139,7 @@ def select_regularization_parameter(n_samples: int = 50, n_evaluations: int = 50
 
 if __name__ == '__main__':
     np.random.seed(0)
-    # select_polynomial_degree(n_samples=100, noise=5)
+    select_polynomial_degree(n_samples=100, noise=5)
     # select_polynomial_degree(n_samples=100, noise=0)
     # select_polynomial_degree(n_samples=1500, noise=10)
-    select_regularization_parameter()
+    # select_regularization_parameter()

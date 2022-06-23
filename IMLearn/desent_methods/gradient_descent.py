@@ -137,21 +137,21 @@ class GradientDescent:
 
         """
 
-        w_t = f.weights_
+        w_t = f.weights
         # prev_w_t = np.full(X.shape[1], np.inf)
         delta = self.tol_ + 1
         avg = self.Avg(w_t)
-        best_w = {'w': w_t, 'val': f.compute_output()}
+        best_w = {'w': w_t, 'val': f.compute_output(X=X, y=y)}
         t = 1
         while t <= self.max_iter_ and delta > self.tol_:
-            eta = self.learning_rate_.lr_step(t)
+            eta = self.learning_rate_.lr_step(t=t)
             f.weights = w_t
-            v_t = f.compute_jacobian()
+            v_t = f.compute_jacobian(X=X, y=y)
             w_t, prev_w_t = w_t - eta * v_t, w_t
             delta = np.linalg.norm(w_t - prev_w_t)
             avg.add_w(w_t)
 
-            cur_val = f.compute_output()
+            cur_val = f.compute_output(X=X, y=y)
             if cur_val < best_w['val']:
                 best_w = {'w': w_t, 'val': cur_val}
             # noinspection PyArgumentList
@@ -163,4 +163,3 @@ class GradientDescent:
         if self.out_type_ == 'average':
             return avg.get_average()
         return best_w['w']
-
